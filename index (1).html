@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#182E1E" />
+<title>Auchenshuggle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark:#182E1E; --mid:#2B5440; --light:#4A8B5E;
+    --amber:#C87C0A; --amberLight:#FEF0D4;
+    --cream:#F4EAD2; --pale:#FDFAF4;
+    --text:#1A2C1C; --muted:#5C7260;
+    --card:#FFFFFF; --border:#D8CCAA;
+    --red:#AD3728; --gold:#B8860B; --goldBg:#FFFBF0;
+    --blind:#111511;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--pale); color:var(--text);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  #root{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+  .blindfont{font-family:'Oswald',sans-serif;letter-spacing:0.08em;text-transform:uppercase;}
+  button{font-family:inherit;}
+  input,select{font-family:inherit;font-size:16px;} /* 16px stops iOS zoom */
+  .spin{animation:spin 1s linear infinite;display:inline-block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){ .spin{animation:none;} }
+
+  /* Header */
+  .hdr{background:var(--dark); padding:calc(env(safe-area-inset-top) + 10px) 16px 0; }
+  .blind{
+    background:var(--blind); border:2px solid #3a4a3c; border-radius:6px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 14px; margin-bottom:10px;
+    box-shadow:inset 0 2px 8px rgba(0,0,0,0.7);
+  }
+  .blind .dest{color:var(--cream); font-size:20px; font-weight:600;}
+  .blind .num{color:var(--amber); font-size:20px; font-weight:600;}
+  .lamp{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:1px;}
+
+  /* Month nav */
+  .mnav{background:var(--mid); display:flex; align-items:center; justify-content:space-between; padding:8px 12px;}
+  .mnav button{background:none;border:none;color:var(--cream);font-size:22px;padding:4px 14px;cursor:pointer;border-radius:8px;}
+  .mnav button:active{background:rgba(255,255,255,0.12);}
+  .mnav .label{color:#fff;font-weight:600;font-size:15px;}
+
+  main{flex:1; padding:14px 14px 90px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:14px; box-shadow:0 1px 3px rgba(24,46,30,0.06);}
+  .card h3{margin:0 0 10px; font-size:13px; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; font-weight:600;}
+  .big{font-size:30px; font-weight:700; color:var(--dark);}
+  .row{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .split{display:flex; gap:10px; margin-top:12px;}
+  .split > div{flex:1; background:var(--cream); border-radius:10px; padding:10px 12px;}
+  .split .who{font-size:12px; color:var(--muted); font-weight:600;}
+  .split .amt{font-size:19px; font-weight:700; color:var(--dark);}
+  .split .pct{font-size:11px; color:var(--muted);}
+
+  .item{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #EFE8D4;}
+  .item:last-child{border-bottom:none;}
+  .item .emoji{font-size:20px; width:28px; text-align:center;}
+  .item .mainline{flex:1; min-width:0;}
+  .item .desc{font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .item .sub{font-size:11px; color:var(--muted);}
+  .item .amt{font-weight:700; font-size:15px; white-space:nowrap;}
+  .item.skipped .desc,.item.skipped .amt{text-decoration:line-through; opacity:0.45;}
+  .badge{font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; letter-spacing:0.03em;}
+  .badge.fixed{background:var(--amberLight); color:var(--amber);}
+  .badge.p1{background:#E3EEE6; color:var(--mid);}
+  .iconbtn{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;color:var(--muted);cursor:pointer;}
+  .iconbtn:active{background:var(--cream);}
+  .iconbtn.danger{color:var(--red);border-color:#E8C7C0;}
+
+  .form{display:flex; flex-direction:column; gap:8px;}
+  .form .frow{display:flex; gap:8px;}
+  .form input,.form select{
+    flex:1; min-width:0; padding:10px 12px; border:1px solid var(--border);
+    border-radius:10px; background:#fff; color:var(--text);
+  }
+  .form input:focus,.form select:focus{outline:2px solid var(--light); border-color:var(--light);}
+  .btn{
+    background:var(--dark); color:var(--cream); border:none; border-radius:10px;
+    padding:12px; font-size:15px; font-weight:600; cursor:pointer; width:100%;
+  }
+  .btn:active{background:var(--mid);}
+  .btn.secondary{background:var(--cream); color:var(--dark); border:1px solid var(--border);}
+  .btn.small{width:auto; padding:8px 14px; font-size:13px;}
+  .btn:disabled{opacity:0.5;}
+
+  .empty{text-align:center; color:var(--muted); font-size:13px; padding:18px 6px;}
+  .note{font-size:12px; color:var(--muted); line-height:1.5;}
+  .err{background:#FBECEA; border:1px solid #E8C7C0; color:var(--red); border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:12px;}
+
+  /* Bottom nav */
+  .nav{
+    position:fixed; bottom:0; left:0; right:0; background:var(--dark);
+    display:flex; max-width:520px; margin:0 auto;
+    padding-bottom:env(safe-area-inset-bottom);
+    border-top:2px solid var(--amber);
+  }
+  .nav button{
+    flex:1; background:none; border:none; color:#8FA894; padding:10px 4px 8px;
+    font-size:11px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .nav button .ico{font-size:20px;}
+  .nav button.on{color:var(--cream);}
+
+  /* Setup */
+  .setup{padding:26px 20px; display:flex; flex-direction:column; gap:14px;}
+  .setup h2{margin:0; color:var(--dark);}
+  .setup label{font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;}
+  .setup input{width:100%; padding:12px; border:1px solid var(--border); border-radius:10px;}
+
+  .potvis{height:10px; background:var(--cream); border-radius:6px; overflow:hidden; margin-top:10px;}
+  .potvis > div{height:100%; background:linear-gradient(90deg,var(--light),var(--gold));}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="module">
+import { render } from 'https://esm.sh/preact@10.19.3';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'https://esm.sh/preact@10.19.3/hooks';
+import { html } from 'https://esm.sh/htm@3.1.1/preact?deps=preact@10.19.3';
+
+/* ---------------- constants ---------------- */
+const CFG_KEY = 'auchenshuggle_gh_cfg';
+const POLL_MS = 30000;
+
+const CATS = [
+  { id:'groceries',  emoji:'🛒', label:'Groceries' },
+  { id:'eating_out', emoji:'🍽️', label:'Eating Out' },
+  { id:'petrol',     emoji:'⛽', label:'Petrol' },
+  { id:'car_lease',  emoji:'🚗', label:'Car Lease' },
+  { id:'transport',  emoji:'🚌', label:'Transport' },
+  { id:'household',  emoji:'🏠', label:'Household' },
+  { id:'utilities',  emoji:'💡', label:'Utilities' },
+  { id:'mortgage',   emoji:'🏦', label:'Mortgage' },
+  { id:'fun',        emoji:'🎬', label:'Fun' },
+  { id:'health',     emoji:'💊', label:'Health' },
+  { id:'travel',     emoji:'✈️', label:'Travel' },
+  { id:'other',      emoji:'📦', label:'Other' },
+];
+const catOf = id => CATS.find(c => c.id === id) || CATS[CATS.length-1];
+
+const EMPTY = {
+  version: 3,
+  p1: 'Marc', p2: 'Emma',
+  savingsRate: 3.5,
+  salaries: {},        // { 'YYYY-MM': { p1: n, p2: n } }
+  fixedTemplates: [],  // { id, cat, desc, amount, active }
+  fixedOverrides: {},  // { 'YYYY-MM': { [tplId]: { skip:true } | { amount:n } } }
+  expenses: [],        // { id, ym, date, cat, desc, amount }
+  savings: [],         // { id, ym, date, desc, amount }
+};
+
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+const fmt = n => '£' + (Math.round(n*100)/100).toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+const today = () => new Date().toISOString().split('T')[0];
+const currentYM = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); };
+const monthLabel = ym => { const [y,m] = ym.split('-'); return new Date(+y, +m-1, 1).toLocaleDateString('en-GB', {month:'long', year:'numeric'}); };
+const shiftYM = (ym, delta) => { const [y,m] = ym.split('-').map(Number); const d = new Date(y, m-1+delta, 1); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); };
+
+/* ---------------- GitHub storage ---------------- */
+function ghHeaders(cfg){
+  return { 'Authorization':'Bearer ' + cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' };
+}
+function ghUrl(cfg){ return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json`; }
+
+function b64encode(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64decode(b64){ return decodeURIComponent(escape(atob(b64.replace(/\s/g,'')))); }
+
+async function ghLoad(cfg){
+  const r = await fetch(ghUrl(cfg) + '?t=' + Date.now(), { headers: ghHeaders(cfg), cache:'no-store' });
+  if (r.status === 404) return { data: null, sha: null, missing: true };
+  if (r.status === 401) throw new Error('Token rejected (401). Check the token is correct and not expired.');
+  if (r.status === 403) throw new Error('Access denied (403). Check the token has Contents read & write access to this repo.');
+  if (!r.ok) throw new Error('GitHub error ' + r.status);
+  const j = await r.json();
+  return { data: JSON.parse(b64decode(j.content)), sha: j.sha, missing: false };
+}
+
+async function ghSave(cfg, data, sha){
+  const body = {
+    message: 'Auchenshuggle update ' + new Date().toISOString(),
+    content: b64encode(JSON.stringify(data, null, 2)),
+  };
+  if (sha) body.sha = sha;
+  const r = await fetch(ghUrl(cfg), { method:'PUT', headers:{...ghHeaders(cfg), 'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (r.status === 409 || r.status === 422) { const e = new Error('conflict'); e.conflict = true; throw e; }
+  if (r.status === 404) throw new Error('Repo not found (404). Create the private repo first, and scope the token to it.');
+  if (!r.ok) throw new Error('Save failed (' + r.status + ')');
+  const j = await r.json();
+  return j.content.sha;
+}
+
+/* ---------------- derived data helpers ---------------- */
+function salaryFor(data, ym){
+  let cur = ym;
+  for (let i = 0; i < 36; i++){
+    const s = data.salaries[cur];
+    if (s && (Number(s.p1) > 0 || Number(s.p2) > 0)) return { ...s, source: cur };
+    cur = shiftYM(cur, -1);
+  }
+  return null;
+}
+function baseShareP1(data, ym){
+  const s = salaryFor(data, ym);
+  if (!s) return 0.5;
+  const a = Number(s.p1)||0, b = Number(s.p2)||0;
+  return (a + b) > 0 ? a / (a + b) : 0.5;
+}
+function weightP1(data, ym, cat){
+  if (cat === 'car_lease') return 1;           // 100% Marc
+  return baseShareP1(data, ym);
+}
+function fixedForMonth(data, ym){
+  const ov = data.fixedOverrides[ym] || {};
+  return (data.fixedTemplates || []).filter(t => t.active !== false).map(t => {
+    const o = ov[t.id] || {};
+    return { tplId: t.id, cat: t.cat, desc: t.desc,
+             amount: o.amount != null ? Number(o.amount) : Number(t.amount),
+             skipped: !!o.skip, overridden: o.amount != null };
+  });
+}
+function monthCosts(data, ym){
+  const fixed = fixedForMonth(data, ym).filter(f => !f.skipped).map(f => ({ cat:f.cat, amount:f.amount }));
+  const variable = data.expenses.filter(e => e.ym === ym).map(e => ({ cat:e.cat, amount:Number(e.amount) }));
+  const all = fixed.concat(variable);
+  let total = 0, s1 = 0;
+  for (const it of all){ const w = weightP1(data, ym, it.cat); total += it.amount; s1 += it.amount * w; }
+  return { total, s1, s2: total - s1 };
+}
+function potValue(data, uptoYM){
+  const entries = (data.savings || []).filter(s => s.ym <= uptoYM);
+  if (!entries.length) return { value:0, contributed:0, interest:0 };
+  const months = entries.map(e => e.ym).sort();
+  const mr = (Number(data.savingsRate)||0) / 100 / 12;
+  let ym = months[0], pot = 0, contributed = 0;
+  let guard = 0;
+  while (ym <= uptoYM && guard++ < 600){
+    const c = entries.filter(e => e.ym === ym).reduce((a,b) => a + Number(b.amount), 0);
+    pot = pot * (1 + mr) + c;
+    contributed += c;
+    ym = shiftYM(ym, 1);
+  }
+  return { value: pot, contributed, interest: pot - contributed };
+}
+
+/* ---------------- components ---------------- */
+
+function Setup({ onConnect }){
+  const [owner, setOwner] = useState('marctreanor8-glitch');
+  const [repo, setRepo] = useState('auchenshuggle-data');
+  const [token, setToken] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const connect = async () => {
+    setErr(''); setBusy(true);
+    const cfg = { owner: owner.trim(), repo: repo.trim(), token: token.trim() };
+    try {
+      const res = await ghLoad(cfg);
+      if (res.missing){
+        // repo exists (or not) — try creating the initial file
+        await ghSave(cfg, EMPTY, null);
+      }
+      localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+      onConnect(cfg);
+    } catch(e){
+      setErr(e.message || 'Could not connect.');
+    } finally { setBusy(false); }
+  };
+
+  return html`
+    <div class="setup">
+      <div class="blind" style="margin-top:6px;">
+        <span class="dest blindfont">Auchenshuggle</span>
+        <span class="num blindfont">9</span>
+      </div>
+      <h2>Connect this phone</h2>
+      <p class="note">The budget lives in a private GitHub repo. Enter the details once — they're saved on this device only and never appear in the app's source code.</p>
+      ${err && html`<div class="err">${err}</div>`}
+      <div>
+        <label>GitHub username</label>
+        <input value=${owner} onInput=${e => setOwner(e.target.value)} autocapitalize="none" autocorrect="off" />
+      </div>
+      <div>
+        <label>Data repo name (must be private)</label>
+        <input value=${repo} onInput=${e => setRepo(e.target.value)} autocapitalize="none" autocorrect="off" />
+      </div>
+      <div>
+        <label>Fine-grained personal access token</label>
+        <input value=${token} onInput=${e => setToken(e.target.value)} type="password" placeholder="github_pat_…" autocapitalize="none" autocorrect="off" />
+      </div>
+      <button class="btn" disabled=${busy || !token.trim()} onClick=${connect}>
+        ${busy ? html`<span class="spin">🚋</span> Connecting…` : 'Connect'}
+      </button>
+      <p class="note">Token setup: GitHub → Settings → Developer settings → Fine-grained tokens. Scope it to the data repo only, with Contents: read and write. Nothing else.</p>
+    </div>`;
+}
+
+function Header({ status }){
+  const lamp = status === 'synced' ? '#4A8B5E' : status === 'saving' ? '#C87C0A' : '#AD3728';
+  const label = status === 'synced' ? 'Synced' : status === 'saving' ? 'Saving…' : status === 'loading' ? 'Loading…' : 'Sync error';
+  return html`
+    <div class="hdr">
+      <div class="blind">
+        <span class="dest blindfont">Auchenshuggle</span>
+        <span style="display:flex;align-items:center;">
+          <span class="lamp" style=${'background:' + lamp + ';box-shadow:0 0 6px ' + lamp}></span>
+          <span style="color:#8FA894;font-size:11px;margin-right:10px;">${label}</span>
+          <span class="num blindfont">9</span>
+        </span>
+      </div>
+    </div>`;
+}
+
+function MonthNav({ ym, setYM }){
+  return html`
+    <div class="mnav">
+      <button aria-label="Previous month" onClick=${() => setYM(shiftYM(ym,-1))}>‹</button>
+      <span class="label">${monthLabel(ym)}</span>
+      <button aria-label="Next month" onClick=${() => setYM(shiftYM(ym,1))}>›</button>
+    </div>`;
+}
+
+function AddExpense({ onAdd }){
+  const [cat, setCat] = useState('groceries');
+  const [desc, setDesc] = useState('');
+  const [amount, setAmount] = useState('');
+  const submit = () => {
+    const a = parseFloat(amount);
+    if (!a || a <= 0) return;
+    onAdd({ id: uid(), date: today(), cat, desc: desc.trim() || catOf(cat).label, amount: a });
+    setDesc(''); setAmount('');
+  };
+  return html`
+    <div class="card">
+      <h3>Add expense</h3>
+      <div class="form">
+        <div class="frow">
+          <select value=${cat} onChange=${e => setCat(e.target.value)}>
+            ${CATS.map(c => html`<option value=${c.id}>${c.emoji} ${c.label}</option>`)}
+          </select>
+          <input placeholder="£0.00" inputmode="decimal" type="number" step="0.01" min="0" value=${amount} onInput=${e => setAmount(e.target.value)} style="max-width:110px;" />
+        </div>
+        <div class="frow">
+          <input placeholder="Description (optional)" value=${desc} onInput=${e => setDesc(e.target.value)} />
+        </div>
+        <button class="btn" onClick=${submit}>Add</button>
+      </div>
+    </div>`;
+}
+
+function ExpensesTab({ data, ym, update }){
+  const fixed = fixedForMonth(data, ym);
+  const variable = data.expenses.filter(e => e.ym === ym).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const { total, s1, s2 } = monthCosts(data, ym);
+  const w1 = baseShareP1(data, ym);
+  const sal = salaryFor(data, ym);
+  const [editing, setEditing] = useState(null); // tplId being edited
+  const [editVal, setEditVal] = useState('');
+  const hasCarLease = fixed.some(f => f.cat === 'car_lease' && !f.skipped) || variable.some(e => e.cat === 'car_lease');
+
+  const setOverride = (tplId, patch) => {
+    update(d => {
+      const ov = { ...(d.fixedOverrides || {}) };
+      const m = { ...(ov[ym] || {}) };
+      const cur = { ...(m[tplId] || {}) };
+      Object.assign(cur, patch);
+      if (patch.amount === null) delete cur.amount;
+      if (patch.skip === false) delete cur.skip;
+      if (Object.keys(cur).length === 0) delete m[tplId]; else m[tplId] = cur;
+      ov[ym] = m;
+      return { ...d, fixedOverrides: ov };
+    });
+  };
+
+  return html`
+    <div>
+      <div class="card">
+        <h3>${monthLabel(ym)} total</h3>
+        <div class="big">${fmt(total)}</div>
+        <div class="split">
+          <div>
+            <div class="who">${data.p1} pays</div>
+            <div class="amt">${fmt(s1)}</div>
+            <div class="pct">${sal ? Math.round(w1*100) + '% of joint costs' : 'split 50/50 — set salaries in Settings'}</div>
+          </div>
+          <div>
+            <div class="who">${data.p2} pays</div>
+            <div class="amt">${fmt(s2)}</div>
+            <div class="pct">${sal ? Math.round((1-w1)*100) + '% of joint costs' : ''}</div>
+          </div>
+        </div>
+        ${hasCarLease && html`<p class="note" style="margin:10px 0 0;">🚗 Car lease is charged 100% to ${data.p1}, all other costs split by salary.</p>`}
+        ${sal && sal.source !== ym && html`<p class="note" style="margin:8px 0 0;">Salary split carried forward from ${monthLabel(sal.source)}.</p>`}
+      </div>
+
+      <div class="card">
+        <h3>Fixed costs</h3>
+        ${fixed.length === 0 && html`<div class="empty">No fixed costs yet — add templates in Settings and they'll appear every month automatically.</div>`}
+        ${fixed.map(f => html`
+          <div class=${'item' + (f.skipped ? ' skipped' : '')} key=${f.tplId}>
+            <span class="emoji">${catOf(f.cat).emoji}</span>
+            <div class="mainline">
+              <div class="desc">${f.desc}</div>
+              <div class="sub">
+                <span class="badge fixed">FIXED</span>
+                ${f.overridden && html` <span class="badge fixed">EDITED</span>`}
+                ${f.cat === 'car_lease' && html` <span class="badge p1">${data.p1.toUpperCase()}</span>`}
+              </div>
+            </div>
+            ${editing === f.tplId
+              ? html`
+                <input type="number" inputmode="decimal" step="0.01" value=${editVal}
+                  onInput=${e => setEditVal(e.target.value)}
+                  style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;" />
+                <button class="iconbtn" onClick=${() => { const v = parseFloat(editVal); if (v > 0) setOverride(f.tplId, { amount: v }); setEditing(null); }}>✓</button>
+                <button class="iconbtn" onClick=${() => setEditing(null)}>✕</button>`
+              : html`
+                <span class="amt">${fmt(f.amount)}</span>
+                <button class="iconbtn" aria-label="Edit this month's amount" onClick=${() => { setEditing(f.tplId); setEditVal(String(f.amount)); }}>✎</button>
+                <button class="iconbtn" aria-label=${f.skipped ? 'Restore' : 'Skip this month'} onClick=${() => setOverride(f.tplId, { skip: !f.skipped })}>${f.skipped ? '↺' : '⊘'}</button>`}
+          </div>`)}
+        ${fixed.some(f => f.overridden) && html`<p class="note" style="margin:8px 0 0;">Edits apply to this month only — the template amount is unchanged.</p>`}
+      </div>
+
+      <${AddExpense} onAdd=${e => update(d => ({ ...d, expenses: [...d.expenses, { ...e, ym }] }))} />
+
+      <div class="card">
+        <h3>Spending this month</h3>
+        ${variable.length === 0 && html`<div class="empty">Nothing yet this month.</div>`}
+        ${variable.map(e => html`
+          <div class="item" key=${e.id}>
+            <span class="emoji">${catOf(e.cat).emoji}</span>
+            <div class="mainline">
+              <div class="desc">${e.desc}</div>
+              <div class="sub">${e.date}${e.cat === 'car_lease' ? html` <span class="badge p1">${data.p1.toUpperCase()}</span>` : ''}</div>
+            </div>
+            <span class="amt">${fmt(Number(e.amount))}</span>
+            <button class="iconbtn danger" aria-label="Delete" onClick=${() => update(d => ({ ...d, expenses: d.expenses.filter(x => x.id !== e.id) }))}>🗑</button>
+          </div>`)}
+      </div>
+    </div>`;
+}
+
+function SavingsTab({ data, ym, update }){
+  const pot = potValue(data, ym);
+  const monthEntries = data.savings.filter(s => s.ym === ym).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const monthTotal = monthEntries.reduce((a,b) => a + Number(b.amount), 0);
+  const w1 = baseShareP1(data, ym);
+  const [desc, setDesc] = useState('');
+  const [amount, setAmount] = useState('');
+
+  const add = () => {
+    const a = parseFloat(amount);
+    if (!a || a <= 0) return;
+    update(d => ({ ...d, savings: [...d.savings, { id: uid(), ym, date: today(), desc: desc.trim() || 'Contribution', amount: a }] }));
+    setDesc(''); setAmount('');
+  };
+
+  return html`
+    <div>
+      <div class="card">
+        <h3>Joint pot · as at ${monthLabel(ym)}</h3>
+        <div class="big">${fmt(pot.value)}</div>
+        <div class="potvis"><div style=${'width:' + (pot.value > 0 ? Math.min(100, pot.contributed / pot.value * 100) : 0) + '%'}></div></div>
+        <div class="row" style="margin-top:8px;">
+          <span class="note">Contributed ${fmt(pot.contributed)}</span>
+          <span class="note" style="color:var(--gold);font-weight:700;">+ ${fmt(pot.interest)} interest @ ${data.savingsRate}%</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>This month's contributions · ${fmt(monthTotal)}</h3>
+        <p class="note" style="margin:0 0 10px;">Split guide: ${data.p1} ${fmt(monthTotal * w1)} · ${data.p2} ${fmt(monthTotal * (1 - w1))} (salary-proportional).</p>
+        ${monthEntries.length === 0 && html`<div class="empty">No contributions logged this month.</div>`}
+        ${monthEntries.map(s => html`
+          <div class="item" key=${s.id}>
+            <span class="emoji">💰</span>
+            <div class="mainline"><div class="desc">${s.desc}</div><div class="sub">${s.date}</div></div>
+            <span class="amt">${fmt(Number(s.amount))}</span>
+            <button class="iconbtn danger" aria-label="Delete" onClick=${() => update(d => ({ ...d, savings: d.savings.filter(x => x.id !== s.id) }))}>🗑</button>
+          </div>`)}
+      </div>
+
+      <div class="card">
+        <h3>Add contribution</h3>
+        <div class="form">
+          <div class="frow">
+            <input placeholder="Description (optional)" value=${desc} onInput=${e => setDesc(e.target.value)} />
+            <input placeholder="£0.00" inputmode="decimal" type="number" step="0.01" min="0" value=${amount} onInput=${e => setAmount(e.target.value)} style="max-width:110px;" />
+          </div>
+          <button class="btn" onClick=${add}>Add to pot</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function SettingsTab({ data, ym, update, disconnect }){
+  const sal = data.salaries[ym] || {};
+  const inherited = salaryFor(data, ym);
+  const [s1, setS1] = useState(sal.p1 != null ? String(sal.p1) : '');
+  const [s2, setS2] = useState(sal.p2 != null ? String(sal.p2) : '');
+  const [rate, setRate] = useState(String(data.savingsRate));
+  const [n1, setN1] = useState(data.p1);
+  const [n2, setN2] = useState(data.p2);
+  // fixed template form
+  const [fCat, setFCat] = useState('mortgage');
+  const [fDesc, setFDesc] = useState('');
+  const [fAmt, setFAmt] = useState('');
+
+  useEffect(() => {
+    const s = data.salaries[ym] || {};
+    setS1(s.p1 != null ? String(s.p1) : '');
+    setS2(s.p2 != null ? String(s.p2) : '');
+  }, [ym, data.salaries]);
+
+  const saveSalaries = () => update(d => ({ ...d, salaries: { ...d.salaries, [ym]: { p1: parseFloat(s1)||0, p2: parseFloat(s2)||0 } } }));
+  const saveNamesRate = () => update(d => ({ ...d, p1: n1.trim() || 'Marc', p2: n2.trim() || 'Emma', savingsRate: parseFloat(rate)||0 }));
+  const addTemplate = () => {
+    const a = parseFloat(fAmt);
+    if (!a || a <= 0) return;
+    update(d => ({ ...d, fixedTemplates: [...(d.fixedTemplates||[]), { id: uid(), cat: fCat, desc: fDesc.trim() || catOf(fCat).label, amount: a, active: true }] }));
+    setFDesc(''); setFAmt('');
+  };
+
+  return html`
+    <div>
+      <div class="card">
+        <h3>Take-home pay · ${monthLabel(ym)}</h3>
+        ${inherited && inherited.source !== ym && html`<p class="note" style="margin:0 0 10px;">Currently using ${monthLabel(inherited.source)} figures (${data.p1} ${fmt(Number(inherited.p1)||0)}, ${data.p2} ${fmt(Number(inherited.p2)||0)}). Enter amounts below to change from this month onwards.</p>`}
+        <div class="form">
+          <div class="frow">
+            <input placeholder=${data.p1 + ' £/month'} inputmode="decimal" type="number" step="1" min="0" value=${s1} onInput=${e => setS1(e.target.value)} />
+            <input placeholder=${data.p2 + ' £/month'} inputmode="decimal" type="number" step="1" min="0" value=${s2} onInput=${e => setS2(e.target.value)} />
+          </div>
+          <button class="btn secondary" onClick=${saveSalaries}>Save salaries for ${monthLabel(ym)}</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Fixed cost templates</h3>
+        <p class="note" style="margin:0 0 10px;">These appear in every month automatically. Edit or skip individual months from the Expenses tab.</p>
+        ${(data.fixedTemplates||[]).map(t => html`
+          <div class=${'item' + (t.active === false ? ' skipped' : '')} key=${t.id}>
+            <span class="emoji">${catOf(t.cat).emoji}</span>
+            <div class="mainline"><div class="desc">${t.desc}</div><div class="sub">${catOf(t.cat).label}</div></div>
+            <span class="amt">${fmt(Number(t.amount))}</span>
+            <button class="iconbtn" aria-label=${t.active === false ? 'Reactivate' : 'Pause'} onClick=${() => update(d => ({ ...d, fixedTemplates: d.fixedTemplates.map(x => x.id === t.id ? { ...x, active: x.active === false } : x) }))}>${t.active === false ? '↺' : '⏸'}</button>
+            <button class="iconbtn danger" aria-label="Delete template" onClick=${() => update(d => ({ ...d, fixedTemplates: d.fixedTemplates.filter(x => x.id !== t.id) }))}>🗑</button>
+          </div>`)}
+        <div class="form" style="margin-top:10px;">
+          <div class="frow">
+            <select value=${fCat} onChange=${e => setFCat(e.target.value)}>
+              ${CATS.map(c => html`<option value=${c.id}>${c.emoji} ${c.label}</option>`)}
+            </select>
+            <input placeholder="£0.00" inputmode="decimal" type="number" step="0.01" min="0" value=${fAmt} onInput=${e => setFAmt(e.target.value)} style="max-width:110px;" />
+          </div>
+          <div class="frow"><input placeholder="Description (optional)" value=${fDesc} onInput=${e => setFDesc(e.target.value)} /></div>
+          <button class="btn secondary" onClick=${addTemplate}>Add fixed cost</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Names & savings rate</h3>
+        <div class="form">
+          <div class="frow">
+            <input value=${n1} onInput=${e => setN1(e.target.value)} />
+            <input value=${n2} onInput=${e => setN2(e.target.value)} />
+          </div>
+          <div class="frow">
+            <input inputmode="decimal" type="number" step="0.1" min="0" value=${rate} onInput=${e => setRate(e.target.value)} />
+            <span style="align-self:center;font-size:13px;color:var(--muted);white-space:nowrap;">% AER on pot</span>
+          </div>
+          <button class="btn secondary" onClick=${saveNamesRate}>Save</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>This device</h3>
+        <p class="note" style="margin:0 0 10px;">Data is stored in your private GitHub repo. Every save is a commit, so full history is kept.</p>
+        <button class="btn secondary" onClick=${disconnect}>Disconnect this device</button>
+      </div>
+    </div>`;
+}
+
+/* ---------------- root app ---------------- */
+function App(){
+  const [cfg, setCfg] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(CFG_KEY)); } catch { return null; }
+  });
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState('loading'); // loading | synced | saving | error
+  const [errMsg, setErrMsg] = useState('');
+  const [ym, setYM] = useState(currentYM());
+  const [tab, setTab] = useState('expenses');
+
+  const shaRef = useRef(null);
+  const dataRef = useRef(null);
+  const dirtyRef = useRef(false);
+  const savingRef = useRef(false);
+  const timerRef = useRef(null);
+  dataRef.current = data;
+
+  const load = useCallback(async (c) => {
+    setStatus('loading');
+    try {
+      const res = await ghLoad(c);
+      if (res.missing){ await ghSave(c, EMPTY, null); const again = await ghLoad(c); shaRef.current = again.sha; setData(again.data); }
+      else { shaRef.current = res.sha; setData(res.data); }
+      setStatus('synced'); setErrMsg('');
+    } catch(e){ setStatus('error'); setErrMsg(e.message); }
+  }, []);
+
+  useEffect(() => { if (cfg) load(cfg); }, [cfg, load]);
+
+  const doSave = useCallback(async () => {
+    if (!cfg || savingRef.current || !dirtyRef.current) return;
+    savingRef.current = true; dirtyRef.current = false;
+    setStatus('saving');
+    try {
+      shaRef.current = await ghSave(cfg, dataRef.current, shaRef.current);
+      setStatus(dirtyRef.current ? 'saving' : 'synced'); setErrMsg('');
+    } catch(e){
+      if (e.conflict){
+        try {
+          const fresh = await ghLoad(cfg);
+          shaRef.current = fresh.sha;
+          shaRef.current = await ghSave(cfg, dataRef.current, shaRef.current); // local wins
+          setStatus('synced'); setErrMsg('');
+        } catch(e2){ dirtyRef.current = true; setStatus('error'); setErrMsg('Sync conflict — will retry.'); }
+      } else { dirtyRef.current = true; setStatus('error'); setErrMsg(e.message); }
+    } finally {
+      savingRef.current = false;
+      if (dirtyRef.current){ clearTimeout(timerRef.current); timerRef.current = setTimeout(doSave, 1500); }
+    }
+  }, [cfg]);
+
+  const update = useCallback((fn) => {
+    setData(d => { const nd = fn(d); dataRef.current = nd; return nd; });
+    dirtyRef.current = true;
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(doSave, 900);
+  }, [doSave]);
+
+  // polling + refresh on return to app
+  useEffect(() => {
+    if (!cfg) return;
+    const poll = async () => {
+      if (dirtyRef.current || savingRef.current) return;
+      try {
+        const res = await ghLoad(cfg);
+        if (!res.missing && res.sha !== shaRef.current){ shaRef.current = res.sha; setData(res.data); }
+        if (status === 'error') { setStatus('synced'); setErrMsg(''); }
+      } catch {}
+    };
+    const iv = setInterval(poll, POLL_MS);
+    const vis = () => { if (document.visibilityState === 'visible') poll(); };
+    document.addEventListener('visibilitychange', vis);
+    return () => { clearInterval(iv); document.removeEventListener('visibilitychange', vis); };
+  }, [cfg, status]);
+
+  const disconnect = () => {
+    if (dirtyRef.current && !confirm('There are unsaved changes. Disconnect anyway?')) return;
+    localStorage.removeItem(CFG_KEY);
+    setCfg(null); setData(null);
+  };
+
+  if (!cfg) return html`<${Setup} onConnect=${c => setCfg(c)} />`;
+
+  return html`
+    <${Header} status=${status} />
+    <${MonthNav} ym=${ym} setYM=${setYM} />
+    <main>
+      ${errMsg && html`<div class="err">${errMsg}</div>`}
+      ${!data && html`<div class="empty"><span class="spin" style="font-size:26px;">🚋</span><br/>Loading the budget…</div>`}
+      ${data && tab === 'expenses' && html`<${ExpensesTab} data=${data} ym=${ym} update=${update} />`}
+      ${data && tab === 'savings' && html`<${SavingsTab} data=${data} ym=${ym} update=${update} />`}
+      ${data && tab === 'settings' && html`<${SettingsTab} data=${data} ym=${ym} update=${update} disconnect=${disconnect} />`}
+    </main>
+    <nav class="nav">
+      <button class=${tab==='expenses' ? 'on' : ''} onClick=${() => setTab('expenses')}><span class="ico">🧾</span>Expenses</button>
+      <button class=${tab==='savings' ? 'on' : ''} onClick=${() => setTab('savings')}><span class="ico">💰</span>Savings</button>
+      <button class=${tab==='settings' ? 'on' : ''} onClick=${() => setTab('settings')}><span class="ico">⚙️</span>Settings</button>
+    </nav>`;
+}
+
+render(html`<${App} />`, document.getElementById('root'));
+</script>
+</body>
+</html>
